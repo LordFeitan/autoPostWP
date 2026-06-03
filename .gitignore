@@ -1,0 +1,22 @@
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+
+# Configuración y secretos
+.env
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+
+# Carpetas de editores/IDE
+.vscode/
+.idea/
+.project
+.pydevproject
+.settings/

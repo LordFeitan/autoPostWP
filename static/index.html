@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tecnober - Generador SEO con IA y WordPress</title>
+    <meta name="description" content="Generador de artículos de blog optimizados mediante Gemini y publicado directo a WordPress REST API.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Outfit', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Custom CSS for Glowing Effects and Animations -->
+    <style>
+        body {
+            background-color: #0b0f19;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%), 
+                radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.12) 0, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(168, 85, 247, 0.08) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+        .glass {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-hover:hover {
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glow-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .glow-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s ease;
+        }
+        .glow-btn:hover::after {
+            left: 100%;
+        }
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 8s infinite ease-in-out;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(11, 15, 25, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.5);
+        }
+        /* Estilos de Vista Previa para contenido HTML renderizado */
+        #preview-content-rendered h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+        }
+        #preview-content-rendered h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #f1f5f9;
+            font-family: 'Outfit', sans-serif;
+        }
+        #preview-content-rendered p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+            color: #cbd5e1;
+        }
+        #preview-content-rendered ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+        #preview-content-rendered ol {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+        #preview-content-rendered li {
+            margin-bottom: 0.5rem;
+        }
+        #preview-content-rendered blockquote {
+            border-left: 4px solid #8b5cf6;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #94a3b8;
+            margin: 1.5rem 0;
+            background: rgba(139, 92, 246, 0.05);
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+        #preview-content-rendered a {
+            color: #a78bfa;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        #preview-content-rendered a:hover {
+            color: #c084fc;
+        }
+        #preview-content-rendered strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-200 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white">
+
+    <!-- Decorative Orbs -->
+    <div class="fixed top-20 left-10 w-72 h-72 bg-indigo-600 rounded-full filter blur-[100px] opacity-20 animate-pulse-slow -z-10"></div>
+    <div class="fixed bottom-20 right-10 w-96 h-96 bg-rose-600 rounded-full filter blur-[120px] opacity-15 animate-pulse-slow -z-10" style="animation-delay: 2s;"></div>
+
+    <!-- Header Navigation -->
+    <header class="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between border-b border-gray-800 bg-gray-950/20 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <!-- Sleek Icon -->
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-rose-500 flex items-center justify-center shadow-lg shadow-purple-900/30">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.656 48.656 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3M3 12l3-3m-3 3l-3-3M3 12c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M19.5 12h-15" />
+                </svg>
+            </div>
+            <div>
+                <span class="font-display font-bold text-xl tracking-tight text-white flex items-center gap-1">
+                    Tecnober <span class="text-xs bg-purple-500/20 text-purple-300 font-semibold px-2 py-0.5 rounded-full border border-purple-500/30">SEO Creator</span>
+                </span>
+            </div>
+        </div>
+        <div>
+            <a href="https://tecnober.com" target="_blank" id="wp-site-link" class="text-sm text-gray-400 hover:text-purple-400 transition flex items-center gap-1 bg-gray-900/50 px-3 py-1.5 rounded-lg border border-gray-800 hover:border-purple-900/40">
+                <span>tecnober.com</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8">
+        <div class="w-full max-w-3xl mx-auto space-y-6">
+            
+            <!-- Credentials Status Banner (Dynamic) -->
+            <div id="config-status-banner" class="hidden transition-all duration-300">
+                <!-- Will be injected by JS -->
+            </div>
+
+            <!-- Card Principal -->
+            <div class="glass glass-hover rounded-3xl p-6 md:p-8 shadow-2xl transition-all duration-300">
+                <div class="mb-8 text-center md:text-left">
+                    <h1 class="font-display font-extrabold text-3xl md:text-4xl gradient-text mb-2">Redactor Inteligente SEO</h1>
+                    <p class="text-gray-400 text-sm md:text-base">Escribe artículos optimizados usando Gemini y publícalos directamente como borrador en WordPress.</p>
+                </div>
+
+                <form id="generator-form" class="space-y-6">
+                    <!-- Tema o Título Semilla -->
+                    <div class="space-y-2">
+                        <label for="theme" class="block text-sm font-semibold text-gray-300">Tema o Título del Artículo <span class="text-rose-500">*</span></label>
+                        <input type="text" id="theme" name="theme" required
+                            class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                            placeholder="Ej. Cómo optimizar la velocidad de carga de un sitio web WordPress en 2026">
+                    </div>
+
+                    <!-- Enfoque SEO / Keywords -->
+                    <div class="space-y-2">
+                        <label for="keywords" class="block text-sm font-semibold text-gray-300 flex justify-between">
+                            <span>Keywords / Enfoque SEO <span class="text-gray-500 font-normal">(Opcional)</span></span>
+                            <span class="text-xs text-purple-400 bg-purple-900/20 px-2 py-0.5 rounded border border-purple-500/20">Recomendado</span>
+                        </label>
+                        <textarea id="keywords" name="keywords" rows="3"
+                            class="w-full bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all resize-none"
+                            placeholder="Ej. Incluye palabras clave como: 'WPO', 'Core Web Vitals', 'Caché de WordPress', 'optimizar imágenes'. Enfoque técnico pero fácil de entender."></textarea>
+                    </div>
+
+                    <!-- Fila de Botones -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Botón Solo Generar -->
+                        <button type="button" id="btn-generate-only"
+                            class="py-4 px-6 bg-gray-950/80 border border-gray-800 hover:bg-gray-900 hover:border-purple-500/50 text-purple-300 font-bold rounded-xl flex items-center justify-center gap-3 transition-all duration-300 transform active:scale-[0.98]">
+                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            <span>Solo Generar Entrada</span>
+                        </button>
+                        <!-- Botón Generar y Publicar -->
+                        <button type="submit" id="btn-submit"
+                            class="glow-btn py-4 px-6 bg-gradient-to-r from-purple-600 via-purple-700 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-bold rounded-xl shadow-lg shadow-purple-950/40 hover:shadow-purple-900/50 flex items-center justify-center gap-3 transition-all duration-300 transform active:scale-[0.98]">
+                            <svg class="w-5 h-5 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                            <span>Generar y Publicar</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- visual loading status -->
+                <div id="loading-panel" class="hidden py-8 flex flex-col items-center justify-center space-y-4">
+                    <!-- Loading Spinner -->
+                    <div class="relative w-16 h-16">
+                        <div class="absolute inset-0 rounded-full border-4 border-purple-900/30"></div>
+                        <div class="absolute inset-0 rounded-full border-4 border-t-purple-500 border-r-rose-500 animate-spin"></div>
+                    </div>
+                    
+                    <div class="text-center space-y-2">
+                        <p id="loading-title" class="font-display font-semibold text-lg text-white">Procesando con Inteligencia Artificial...</p>
+                        <p id="loading-step" class="text-sm text-purple-300">Conectando con Google Gemini 1.5 Flash...</p>
+                    </div>
+
+                    <!-- Step Indicators -->
+                    <div class="flex gap-2 mt-4">
+                        <div id="step-dot-1" class="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse"></div>
+                        <div id="step-dot-2" class="w-2.5 h-2.5 rounded-full bg-gray-700"></div>
+                        <div id="step-dot-3" class="w-2.5 h-2.5 rounded-full bg-gray-700"></div>
+                    </div>
+                </div>
+
+                <!-- success result panel -->
+                <div id="success-panel" class="hidden mt-8 border-t border-gray-800 pt-6 space-y-6 transition-all duration-300">
+                    <div class="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl">
+                        <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xs uppercase font-semibold text-emerald-400 tracking-wider">Status 201 - Creado</span>
+                            <h3 class="text-white font-bold text-base leading-tight">¡Artículo Publicado como Borrador!</h3>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-xs text-gray-500 uppercase block font-semibold">Título del Post</span>
+                            <span id="result-title" class="text-white font-semibold text-lg"></span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-xs text-gray-500 uppercase block font-semibold">Post ID</span>
+                                <span id="result-id" class="text-purple-400 font-mono font-bold"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-500 uppercase block font-semibold">Estado</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">Borrador (Draft)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <a id="btn-edit" href="#" target="_blank"
+                            class="glow-btn flex-1 py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl text-center flex items-center justify-center gap-2 transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Editar en WordPress</span>
+                        </a>
+                        <a id="btn-view" href="#" target="_blank"
+                            class="flex-1 py-3 px-4 bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-300 font-semibold rounded-xl text-center flex items-center justify-center gap-2 transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <span>Vista Previa del Post</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- error result panel -->
+                <div id="error-panel" class="hidden mt-8 border-t border-gray-800 pt-6 space-y-4 transition-all duration-300">
+                    <div class="flex items-start gap-3 bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl">
+                        <div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400 flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-xs uppercase font-semibold text-rose-400 tracking-wider">Error en la Operación</span>
+                            <h3 class="text-white font-bold text-base leading-tight">No se pudo procesar tu solicitud</h3>
+                            <p id="error-message" class="text-sm text-gray-300 font-normal leading-relaxed"></p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Panel de Vista Previa del Artículo Generado -->
+            <div id="preview-panel" class="hidden glass glass-hover rounded-3xl p-6 md:p-8 shadow-2xl transition-all duration-300 space-y-6">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-gray-800 pb-4 gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Generado con Éxito</span>
+                            <span id="preview-publish-status" class="text-xs bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-500/30">Pendiente de Publicar</span>
+                        </div>
+                        <h2 class="font-display font-bold text-xl text-white">Previsualización del Artículo</h2>
+                    </div>
+                    
+                    <!-- Tabs -->
+                    <div class="flex bg-gray-900/80 p-1 rounded-lg border border-gray-800">
+                        <button type="button" id="tab-rendered" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-purple-600 text-white transition-all">Vista Previa</button>
+                        <button type="button" id="tab-raw" class="px-3 py-1.5 text-xs font-semibold rounded-md text-gray-400 hover:text-white transition-all">Código HTML</button>
+                    </div>
+                </div>
+
+                <!-- Info Box para WordPress si ya está publicado -->
+                <div id="preview-wp-info" class="hidden bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-white font-bold text-sm">Publicado en WordPress</p>
+                            <p class="text-gray-400 text-xs">ID de Post: <span id="preview-wp-id" class="font-mono text-purple-300"></span></p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <a id="preview-btn-edit" href="#" target="_blank" class="px-3 py-1.5 bg-purple-600/80 hover:bg-purple-600 text-white text-xs font-semibold rounded-lg transition-all">Editar en WP</a>
+                        <a id="preview-btn-view" href="#" target="_blank" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold rounded-lg transition-all">Ver Post</a>
+                    </div>
+                </div>
+
+                <!-- Título Generado -->
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Título del Artículo</label>
+                        <button type="button" id="btn-copy-title" class="text-purple-400 hover:text-purple-300 text-xs flex items-center gap-1 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            <span id="copy-title-text">Copiar Título</span>
+                        </button>
+                    </div>
+                    <h3 id="preview-title" class="text-lg font-bold text-white bg-gray-950/40 p-3 rounded-xl border border-gray-900"></h3>
+                </div>
+
+                <!-- Cuerpo del Artículo -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs text-gray-500 uppercase font-semibold">Contenido (HTML)</label>
+                        <button type="button" id="btn-copy-content" class="text-purple-400 hover:text-purple-300 text-xs flex items-center gap-1 transition-all bg-purple-500/10 px-2.5 py-1 rounded border border-purple-500/20">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            <span id="copy-content-text">Copiar HTML</span>
+                        </button>
+                    </div>
+
+                    <!-- Vista Renderizada -->
+                    <div id="preview-content-rendered" class="bg-gray-950/40 p-6 rounded-xl border border-gray-900 max-h-[400px] overflow-y-auto text-gray-300">
+                        <!-- Se inserta el HTML generado -->
+                    </div>
+
+                    <!-- Vista Código HTML Crudo -->
+                    <textarea id="preview-content-raw" readonly class="hidden w-full h-[400px] font-mono text-xs bg-gray-950/40 p-6 rounded-xl border border-gray-900 text-purple-300 focus:outline-none focus:ring-0 resize-none"></textarea>
+                </div>
+
+                <!-- Botón de publicar lo generado -->
+                <div id="preview-publish-action-div" class="pt-4 border-t border-gray-800 flex justify-end">
+                    <button type="button" id="btn-publish-generated" class="glow-btn py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-purple-950/40 flex items-center justify-center gap-2 transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span>Publicar este contenido en WordPress</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-7xl mx-auto px-6 py-6 border-t border-gray-900 bg-gray-950/10 text-center text-xs text-gray-600">
+        <p>&copy; 2026 Tecnober. Desarrollado con FastAPI, Google Gemini 1.5 y WordPress REST API.</p>
+    </footer>
+
+    <!-- App Script -->
+    <script>
+        const form = document.getElementById('generator-form');
+        const btnSubmit = document.getElementById('btn-submit');
+        const btnGenerateOnly = document.getElementById('btn-generate-only');
+        const loadingPanel = document.getElementById('loading-panel');
+        const successPanel = document.getElementById('success-panel');
+        const errorPanel = document.getElementById('error-panel');
+        const configStatusBanner = document.getElementById('config-status-banner');
+
+        const loadingTitle = document.getElementById('loading-title');
+        const loadingStep = document.getElementById('loading-step');
+        
+        const dot1 = document.getElementById('step-dot-1');
+        const dot2 = document.getElementById('step-dot-2');
+        const dot3 = document.getElementById('step-dot-3');
+
+        // Vista Previa Elementos
+        const previewPanel = document.getElementById('preview-panel');
+        const tabRendered = document.getElementById('tab-rendered');
+        const tabRaw = document.getElementById('tab-raw');
+        const previewWpInfo = document.getElementById('preview-wp-info');
+        const previewWpId = document.getElementById('preview-wp-id');
+        const previewBtnEdit = document.getElementById('preview-btn-edit');
+        const previewBtnView = document.getElementById('preview-btn-view');
+        const previewPublishStatus = document.getElementById('preview-publish-status');
+        const previewTitle = document.getElementById('preview-title');
+        const previewContentRendered = document.getElementById('preview-content-rendered');
+        const previewContentRaw = document.getElementById('preview-content-raw');
+        const btnCopyTitle = document.getElementById('btn-copy-title');
+        const btnCopyContent = document.getElementById('btn-copy-content');
+        const btnPublishGenerated = document.getElementById('btn-publish-generated');
+        const previewPublishActionDiv = document.getElementById('preview-publish-action-div');
+
+        // Estado Global del Post Generado
+        let currentGeneratedPost = {
+            title: '',
+            content: '',
+            published: false,
+            post_id: null,
+            edit_link: '',
+            link: ''
+        };
+
+        // Verificar el estado de la configuración al cargar
+        async function checkConfigStatus() {
+            try {
+                const response = await fetch('/api/config-status');
+                const data = await response.json();
+                
+                if (!data.configured) {
+                    configStatusBanner.className = "block bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl mb-6 text-sm text-amber-200";
+                    let errorList = data.errors.map(err => `<li>• ${err}</li>`).join('');
+                    configStatusBanner.innerHTML = `
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="font-bold text-white">¡Configuración pendiente!</p>
+                                <p>Por favor edita el archivo <code class="bg-black/40 px-1 py-0.5 rounded text-amber-300">.env</code> en la raíz del proyecto y completa las credenciales:</p>
+                                <ul class="space-y-1 font-mono text-xs text-amber-400">
+                                    ${errorList}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    // Deshabilitar botones de acuerdo a qué falta
+                    const hasWpErrors = data.errors.some(err => err.includes("WP_"));
+                    const hasGeminiErrors = data.errors.some(err => err.includes("GEMINI_"));
+
+                    if (hasGeminiErrors) {
+                        btnGenerateOnly.disabled = true;
+                        btnGenerateOnly.className = "py-4 px-6 bg-gray-800 text-gray-500 font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-3";
+                    }
+
+                    btnSubmit.disabled = true;
+                    btnSubmit.className = "py-4 px-6 bg-gray-800 text-gray-500 font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-3";
+                } else {
+                    configStatusBanner.className = "hidden";
+                    btnSubmit.disabled = false;
+                    btnGenerateOnly.disabled = false;
+                }
+            } catch (err) {
+                console.error("Error al obtener la configuración:", err);
+            }
+        }
+
+        // Pestañas de Vista Previa
+        tabRendered.addEventListener('click', () => {
+            tabRendered.className = "px-3 py-1.5 text-xs font-semibold rounded-md bg-purple-600 text-white transition-all";
+            tabRaw.className = "px-3 py-1.5 text-xs font-semibold rounded-md text-gray-400 hover:text-white transition-all";
+            previewContentRendered.classList.remove('hidden');
+            previewContentRaw.classList.add('hidden');
+        });
+
+        tabRaw.addEventListener('click', () => {
+            tabRaw.className = "px-3 py-1.5 text-xs font-semibold rounded-md bg-purple-600 text-white transition-all";
+            tabRendered.className = "px-3 py-1.5 text-xs font-semibold rounded-md text-gray-400 hover:text-white transition-all";
+            previewContentRaw.classList.remove('hidden');
+            previewContentRendered.classList.add('hidden');
+        });
+
+        // Copiar Título
+        btnCopyTitle.addEventListener('click', async () => {
+            if (!currentGeneratedPost.title) return;
+            try {
+                await navigator.clipboard.writeText(currentGeneratedPost.title);
+                const copyText = document.getElementById('copy-title-text');
+                copyText.textContent = "¡Copiado!";
+                setTimeout(() => { copyText.textContent = "Copiar Título"; }, 2000);
+            } catch (err) {
+                console.error("No se pudo copiar el título:", err);
+            }
+        });
+
+        // Copiar Contenido HTML
+        btnCopyContent.addEventListener('click', async () => {
+            if (!currentGeneratedPost.content) return;
+            try {
+                await navigator.clipboard.writeText(currentGeneratedPost.content);
+                const copyText = document.getElementById('copy-content-text');
+                copyText.textContent = "¡HTML Copiado!";
+                setTimeout(() => { copyText.textContent = "Copiar HTML"; }, 2000);
+            } catch (err) {
+                console.error("No se pudo copiar el contenido:", err);
+            }
+        });
+
+        // Manejar click en "Solo Generar Entrada"
+        btnGenerateOnly.addEventListener('click', async () => {
+            const theme = document.getElementById('theme').value.trim();
+            const keywords = document.getElementById('keywords').value.trim();
+
+            if (!theme) {
+                alert("Por favor, introduce un tema o título semilla.");
+                return;
+            }
+
+            // Ocultar paneles anteriores y mostrar cargando
+            successPanel.classList.add('hidden');
+            errorPanel.classList.add('hidden');
+            previewPanel.classList.add('hidden');
+            form.classList.add('hidden');
+            loadingPanel.classList.remove('hidden');
+
+            setStep(1, "Generando el artículo...", "Conectando con Google Gemini 1.5 Flash...");
+            const stepTimer = setTimeout(() => {
+                setStep(2, "Optimizando estructura SEO...", "Redactando contenido HTML estructurado...");
+            }, 3000);
+
+            try {
+                const response = await fetch('/api/generate-only', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ theme, keywords })
+                });
+
+                clearTimeout(stepTimer);
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Actualizar el estado global
+                    currentGeneratedPost.title = data.title;
+                    currentGeneratedPost.content = data.content;
+                    currentGeneratedPost.published = false;
+                    currentGeneratedPost.post_id = null;
+
+                    // Llenar previsualización
+                    previewTitle.textContent = data.title;
+                    previewContentRendered.innerHTML = data.content;
+                    previewContentRaw.value = data.content;
+
+                    // Resetear vista previa UI
+                    previewPublishStatus.textContent = "Pendiente de Publicar";
+                    previewPublishStatus.className = "text-xs bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-500/30";
+                    previewWpInfo.classList.add('hidden');
+                    previewPublishActionDiv.classList.remove('hidden');
+
+                    // Ir a la pestaña Rendered por defecto
+                    tabRendered.click();
+
+                    loadingPanel.classList.add('hidden');
+                    previewPanel.classList.remove('hidden');
+                    form.classList.remove('hidden');
+                } else {
+                    const errorMsg = data.detail || data.message || "Ocurrió un error inesperado al generar.";
+                    showError(errorMsg);
+                }
+            } catch (err) {
+                clearTimeout(stepTimer);
+                showError("No se pudo conectar con el servidor backend. Asegúrate de que FastAPI esté corriendo en local.");
+            }
+        });
+
+        // Manejar click en "Publicar este contenido en WordPress"
+        btnPublishGenerated.addEventListener('click', async () => {
+            if (!currentGeneratedPost.title || !currentGeneratedPost.content) return;
+
+            btnPublishGenerated.disabled = true;
+            const originalBtnHtml = btnPublishGenerated.innerHTML;
+            btnPublishGenerated.innerHTML = `
+                <svg class="w-4 h-4 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Publicando en WordPress...</span>
+            `;
+
+            try {
+                const response = await fetch('/api/publish-only', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: currentGeneratedPost.title,
+                        content: currentGeneratedPost.content
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    currentGeneratedPost.published = true;
+                    currentGeneratedPost.post_id = data.post_id;
+                    currentGeneratedPost.edit_link = data.edit_link;
+                    currentGeneratedPost.link = data.link;
+
+                    // Actualizar panel
+                    previewPublishStatus.textContent = "Publicado como Borrador";
+                    previewPublishStatus.className = "text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30";
+                    
+                    previewWpId.textContent = data.post_id;
+                    previewBtnEdit.href = data.edit_link;
+                    previewBtnView.href = data.link;
+                    
+                    previewWpInfo.classList.remove('hidden');
+                    previewPublishActionDiv.classList.add('hidden');
+
+                    // Sincronizar y mostrar también el panel de éxito principal
+                    document.getElementById('result-title').textContent = data.title;
+                    document.getElementById('result-id').textContent = data.post_id;
+                    document.getElementById('btn-edit').href = data.edit_link;
+                    document.getElementById('btn-view').href = data.link;
+                    successPanel.classList.remove('hidden');
+                } else {
+                    const errorMsg = data.detail || data.message || "Ocurrió un error inesperado al conectar con WordPress.";
+                    alert("Error: " + errorMsg);
+                }
+            } catch (err) {
+                alert("Error al conectar con el servidor backend.");
+            } finally {
+                btnPublishGenerated.disabled = false;
+                btnPublishGenerated.innerHTML = originalBtnHtml;
+            }
+        });
+
+        // Manejar el submit del formulario (Generar y Publicar de inmediato)
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const theme = document.getElementById('theme').value.trim();
+            const keywords = document.getElementById('keywords').value.trim();
+
+            if (!theme) return;
+
+            // Ocultar paneles anteriores y mostrar cargando
+            successPanel.classList.add('hidden');
+            errorPanel.classList.add('hidden');
+            previewPanel.classList.add('hidden');
+            form.classList.add('hidden');
+            loadingPanel.classList.remove('hidden');
+
+            // Simular pasos visuales
+            setStep(1, "Generando el artículo...", "Conectando con Google Gemini 1.5 Flash...");
+            
+            const stepTimer = setTimeout(() => {
+                setStep(2, "Optimizando estructura SEO...", "Redactando contenido HTML estructurado...");
+            }, 3000);
+
+            const stepTimer2 = setTimeout(() => {
+                setStep(3, "Guardando borrador...", "Enviando post a WordPress REST API...");
+            }, 7000);
+
+            try {
+                const response = await fetch('/api/generate-publish', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ theme, keywords })
+                });
+
+                clearTimeout(stepTimer);
+                clearTimeout(stepTimer2);
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Actualizar estado global
+                    currentGeneratedPost.title = data.title;
+                    currentGeneratedPost.content = data.content;
+                    currentGeneratedPost.published = true;
+                    currentGeneratedPost.post_id = data.post_id;
+                    currentGeneratedPost.edit_link = data.edit_link;
+                    currentGeneratedPost.link = data.link;
+
+                    // Rellenar previsualización
+                    previewTitle.textContent = data.title;
+                    previewContentRendered.innerHTML = data.content;
+                    previewContentRaw.value = data.content;
+
+                    previewPublishStatus.textContent = "Publicado como Borrador";
+                    previewPublishStatus.className = "text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30";
+                    
+                    previewWpId.textContent = data.post_id;
+                    previewBtnEdit.href = data.edit_link;
+                    previewBtnView.href = data.link;
+                    
+                    previewWpInfo.classList.remove('hidden');
+                    previewPublishActionDiv.classList.add('hidden');
+
+                    // Cambiar a pestaña rendered
+                    tabRendered.click();
+
+                    // Mostrar éxito principal
+                    document.getElementById('result-title').textContent = data.title;
+                    document.getElementById('result-id').textContent = data.post_id;
+                    document.getElementById('btn-edit').href = data.edit_link;
+                    document.getElementById('btn-view').href = data.link;
+
+                    loadingPanel.classList.add('hidden');
+                    successPanel.classList.remove('hidden');
+                    previewPanel.classList.remove('hidden');
+                    form.classList.remove('hidden');
+                    form.reset();
+                } else {
+                    const errorMsg = data.detail || data.message || "Ocurrió un error inesperado.";
+                    showError(errorMsg);
+                }
+
+            } catch (err) {
+                clearTimeout(stepTimer);
+                clearTimeout(stepTimer2);
+                showError("No se pudo conectar con el servidor backend. Asegúrate de que FastAPI esté corriendo en local.");
+            }
+        });
+
+        function setStep(num, title, description) {
+            loadingTitle.textContent = title;
+            loadingStep.textContent = description;
+            
+            // Actualizar luces de paso
+            dot1.className = num >= 1 ? "w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse" : "w-2.5 h-2.5 rounded-full bg-gray-700";
+            dot2.className = num >= 2 ? "w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse" : "w-2.5 h-2.5 rounded-full bg-gray-700";
+            dot3.className = num >= 3 ? "w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse" : "w-2.5 h-2.5 rounded-full bg-gray-700";
+        }
+
+        function showError(msg) {
+            document.getElementById('error-message').textContent = msg;
+            loadingPanel.classList.add('hidden');
+            errorPanel.classList.remove('hidden');
+            form.classList.remove('hidden');
+        }
+
+        // Cargar estado inicial
+        checkConfigStatus();
+    </script>
+</body>
+</html>
